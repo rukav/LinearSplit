@@ -1,0 +1,11 @@
+CMP-START   TAGG	
+
+STEP-START      AGGREGATION     "HiPerformance: Transaction Aggregation"
+PROGRAM         AGGREGATION-01  "opsubdrv.exe T"
+PROGRAM         AGGREGATION-02  "opsubdrv.exe D"
+PROGRAM         AGGREGATION-05  "optrndrv.exe U 1"
+FAN-OUT         AGGREGATION-06b TXN_AGGREGATION_PROCESS_COUNT "touchscript $OPAS_BCPFILES/Aggg.bcp.%d"
+FAN-OUT         AGGREGATION-07  TXN_AGGREGATION_PROCESS_COUNT Aggg_%d.sh
+STEP-END        AGGREGATION
+
+CMP-END	TAGG

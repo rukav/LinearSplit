@@ -1,0 +1,59 @@
+1. Current splitters (Naive, Greedy)
+2. Limitations of the splitters
+3. Example (1,2,3,4,5)
+4. The goal. Cost. Weight.
+5. Optimal splitting. Common splitter Framework. Splitting DSL
+6. Limitations of optimal splitting
+7. Approximation solution.
+8. Real test case. Transaction Aggregation.
+9. The program. Lazy. Literate. Description
+10. Real test case timings, statistics.
+11. The cost of finding the balanced solution for naive splitting. Iteration.Standard deviation. Try.
+12. Fanout queue. Gap penalty. Continiuos processing. acid range. Limitations of continuous processing.
+13. Tex. consultancy tools. (splitting, configurations sybase, application, data analysis, etc)
+14. Job estimation. Linear time. Predictability. Maintenance. Splitting and predictability. CPU restrictions.
+15. Statistical model of the jobs execution. Predictability.
+16. v18 and continuos processing
+
+
+
+
+emails
+Here are some potential deliverables related to the predictability model to discuss.
+a) streams optimization test script(s). Usually it's a little bit challenging to discover the proper HiPerf streams counters for the clients. In most cases it's trial and error approach by tweaking the counters and run cmp. The approach takes too much time and efforts. It will be helpful if the counters can be estimated without running cmp using a lightweight instrumentarium and based on the typical dataload. I did some prototyping for the transaction aggregation job and the current SSgA dump. The continuous processing uses slightly different mechanism to split the jobs but even here the proper number of streams reading acids from the queue should be estimated.
+
+b) optimal splitter scripts.  Ideally those scripts suppose to help estimate the variance between the different splitters configurations and predict the outcome. In some cases the original splitters can be replaced by more optimal ones on the client side without new distribution if needed. I have investigated the current HiPerf splitters  and have created and tested  the prototype for transaction aggregation job and the current SSgA dump.  
+
+c) the approach to eliminate some of the heavy accounts to meet the SLA and to schedule processing of those accounts outside of the SLA window. The approach can be represented by the scripts and the configurable thresholds. It suppose to be applicable for the both continuos processing setting and the standard cmp setting
+
+d) statistics analysis script. It's important to have predictable linear time of the execution CMP. The different statistics including timings, counts, etc suppose to be gathered and stored during CMP execution. The script suppose to estimate the dependency between execution of the CMP jobs and the volume of the data to process. Potentially it can be helpful to predict the required maintenance job, influence of the other applications on the CMP, etc.
+
+
+
+
+Here are some drill down comments regarding the topics in the document.
+
+Estimate the correlation between the configurations of (The application, and the database servers) and properties of the input dataset. For example, we can define the set of static configurations (models) as per SSgA stage or/and per full run/rerun cycles;
+There are at least three configurations that can be adjusted depending from the properties of the input dataset:
+a) Cshrc. 
+- The counters can be adjusted based on the number accounts to process. Usually SSgA has smaller number accounts to process during rerun  vs main cycle. Even if the overhead to process empty chunks is not too big but there are a lot of reruns during the day and some of the jobs (for example, transaction aggregation) can benefit from dynamic counter because in addition to process the empty chunks this job has to process the empty bcp file during dataload.
+- The returns calculation could potentially benefit from dynamic adjustment  the recalc queue configuration parameter by turning it on/off for the different dataset.
+b) Database server configuration,
+- dynamically turn on/off the parallelism for the jobs that can benefit from it
+- dynamically turn on/off the number of engines for the jobs that can benefit from it
+c) Cycle files can be adjusted to provide the execution of the setting/unsetting configuration parameters.
+Also, SSgA has the different hardware in UAT and the PROD environments. This difference can require to have the different configurations in UAT vs PROD.
+
+Estimate how long the CMP will run based on the current dataset; 
+To predict the CMP runing time the estimation of the constituent cmp jobs should be done first. There are approximately 30 different jobs in the SSgA cycle file. The job running time estimation can be based on the cost factor per job. In case of the multistream job the cost factor of the most expensive chunk can be choosen as the cost factor of the whole job. It can be a challenge to estimate the whole CMP because the dataset will be changed during CMP execution. The additional input data is pumped by SSgA drivers and some of the CMP drivers. If it will be the case the task can be simplified to predict just most expensive CMP jobs. Further analysis is required.
+
+Estimate the longest running accounts with the ability to delay their calculation if a predictable time of CMP execution will overrun some predefined upper bound. It maybe possible for  SSgA to run some accounts offline, for example on weekends;
+ Estimation can be based on the account cost factor. In case if the job predicted timing is more than predefined upper bound than the expensive account(s) data could be moved to the temporary storage and processed later. It seems StateStreet GE uses the similar approach in the benchmark processing. It can be helpful to know more details in their approach.
+
+Estimate the impact of the CMP on any SSgA applications/scripts which are running in parallel with the CMP. This is something which needs to be taken into account as their could be contention for system resources , whilst the business users are using the system , and maybe impacted by the CMP running at the same time; 
+There are bunch of the non CMP applications can be run during CMP including Mosiki and the different SSgA applications. The CMP jobs can be resource intensive (specially during multistream jobs) so other applications (mostly GUI) can be affected if they are executed in this timeframe. For example, the current splitters limitations could force to use all available configured database engines and there is no easy way (without loosing the performance) to limit the execution of the multistream jobs to the specific number of the engines. For example, SSgA can configure 15 engines and it can be desirable to dedicate 12 engines for HiPerf and keep 3 engines free for the other applications. We cannot do such thing right now. To have more predictable solution the implementation of splitters should be reevaluated. 
+
+Take into account the difference between estimated time and the real-time as each run can vary because of the caches, contentions, maintenance, tempdb, etc. It will be nice to consider all those factors;
+The statistics of the cmp jobs unitized cost factors per unit of time could be maintained (including min, max, average values). This information can help to predict the required maintenance jobs. For example, if the cmp unitized cost factor is more than predefined upper bound value the missing maintenance could be the factor.
+
+This is my view on the predictability and I can miss the point. Also, some of the ideas can fail because of time constraints or complexity. So, you could consider it as the preliminary investigation. In meantime I could spend some time with the prototyping of the different splitter implementation. The simple prototype should not take a lot of time. It can be helpful not only for measuring performance differences of the multistream jobs but also help to build the better predictable model.
