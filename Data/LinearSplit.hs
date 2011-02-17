@@ -20,7 +20,7 @@
 --                     combining the consecutive items based on the threshold parameter.
 -- 
 
-module Utils.LinearSplit (
+module Data.LinearSplit (
     Item (..),
     Range (..),
     lPartition,

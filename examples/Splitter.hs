@@ -17,7 +17,7 @@ import System.IO
 import System.CPUTime (getCPUTime)
 import Control.Monad (when)
 import System.Console.CmdArgs
-import Utils.LinearSplit
+import Data.LinearSplit
 
 type AccountId = Int
 type NumRecords = Int

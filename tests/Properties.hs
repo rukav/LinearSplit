@@ -2,7 +2,7 @@
 
 module Main where
 
-import Utils.LinearSplit
+import Data.LinearSplit
 import Test.QuickCheck
 import Test.Framework (Test, defaultMain, testGroup)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
