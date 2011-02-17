@@ -1,0 +1,17 @@
+The LinearSplit module implements partitioning the sequence of items to the 
+subsequences in the order given. The next functions are provided:
+   gPartition  - split the sequence of items items using greedy heuristic. 
+   lPartition  - split the sequence of items to minimize the maximum cost 
+                 over all the subsequences using linear partition algorithm
+                 (see the 'The Algorithm Design Manual' by Steven S. Skiena..)  
+   ltPartition - the approximation of the linear partition algorithm.
+                 The large size of the work items space is decreased by
+                 combining the consecutive items based on the threshold 
+                 parameter.
+See examples/Splitter.hs for the usage help.
+
+For example, the next command will split the items in test1.txt on 5 ranges using
+greedy heuristics and linear partition algorithm.
+$ Splitter -f test1.txt -n -o -g -t500 -s5
+
+

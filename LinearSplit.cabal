@@ -1,0 +1,35 @@
+Name:                LinearSplit
+Version:             0.1
+Synopsis:            Partition the sequence of items to the subsequences in the order given
+Description:         The LinearSplit module implements partitioning the sequence of items to the 
+                     subsequences in the order given. The next functions are exported:
+                       gPartition  - split the sequence of items items using greedy heuristic. 
+                       lPartition  - split the sequence of items to minimize the maximum cost 
+                                     over all the subsequences using linear partition algorithm
+                                     (see the 'The Algorithm Design Manual' by Steven S. Skiena..)  
+                       ltPartition - the approximation of the linear partition algorithm.
+                                     The large size of the work items space is decreased by
+                                     combining the consecutive items based on the threshold 
+                                     parameter.
+License:             BSD3
+License-File:        LICENSE
+Author:              Vitaliy Rukavishnikov
+Maintainer:          virukav@gmail.com
+Homepage:            http://github.com/rukav/LinearSplit
+Bug-Reports:         mailto:virukav@gmail.com
+Build-Type:          Simple
+Tested-with:	     GHC==6.12.3
+Category:            Utils
+Data-Dir:            examples
+Data-Files:	     test1.txt
+Cabal-Version:       >=1.2
+Extra-Source-Files:  README,
+                     examples/Splitter.hs,
+                     tests/Properties.hs
+Library
+    Exposed-Modules:     Utils.LinearSplit
+    Build-Depends:       base >= 3.0.3.2 && < 5, 
+                         cmdargs >= 0.3, 
+                         array, 
+                         QuickCheck >= 1.2.0.1,
+                         haskell98
