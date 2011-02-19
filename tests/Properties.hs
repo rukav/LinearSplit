@@ -69,8 +69,8 @@ prop_numRanges = forAll (arbitrary :: Gen Split) $ \s ->
 -- before splitting
 prop_equal s = 
   let inpIds = map item (items s)
-      outIds = concat . map (map item)
-  in all ((==) inpIds) (map outIds (splitters s))
+      outIds = concatMap (map item)
+  in all (inpIds ==) (map outIds (splitters s))
 
 -- | Reverse working items preserves the optimal cost
 prop_reverse s =

@@ -104,6 +104,6 @@ shrink thr items = map mkItem' $ groupBy thr items where
 
 -- | Ungrouping the items
 unshrink :: [[Item [Item a b] b]] -> [[Item a b]]
-unshrink [] = []
-unshrink (xs:xss) = concat (map item xs) : unshrink xss 
+unshrink = map (concatMap item)
+
 
