@@ -29,14 +29,14 @@ import Data.List (nub, groupBy, inits)
 
 -- | Representation of the work item
 data Item a b = Item {
-   item :: a,       -- item id
-   weight :: b      -- weight of the item
+   item :: a,       -- ^ item id
+   weight :: b      -- ^ weight of the item
 } deriving (Eq, Show, Ord)
 
 -- | The table cell to store the computed partitions
 data Cell b = Cell {
-   cost :: b,       -- cost of the partition
-   ind  :: Int      -- partition index in the work items
+   cost :: b,       -- ^ cost of the partition
+   ind  :: Int      -- ^ partition index in the work items
 } deriving (Eq, Show, Ord)
 
 -- | Combine the consecutive items to decrease the space of the input
