@@ -3,7 +3,7 @@
 module Main where
 
 import Data.LinearSplit
-import Test.QuickCheck
+import Test.QuickCheck hiding (ranges)
 import Test.Framework (Test, defaultMain, testGroup)
 import Test.Framework.Providers.QuickCheck2 (testProperty)
 
@@ -35,8 +35,8 @@ instance Arbitrary Split where
       let is = map mkItem $ zip [1..length ws] ws
       return $ Split n is thr
 
--- |
-splitters (Split n xs t) = 
+-- | Different partition strategies to test
+splitters (Split n xs t) = --map ranges 
   [lPartition n xs, ltPartition n xs t, byLength n xs, byAvgCost n xs]
   where
     byLength n xs = 
@@ -51,59 +51,39 @@ splitters (Split n xs t) =
 -- | Ensure that the sum of the items weights equals to 
 -- the total ranges costs 
 prop_totalCost s = 
-   let totalCosts = map (floor . sum . map price) (splitters s)
+   let totalCosts = map (floor . sum . map rangeCost) (splitters s)
        itemsCost = floor $ sum $ map weight (items s)
    in all (== itemsCost) totalCosts
 
 -- | The optimal algorithm has to produce the lowest partition cost
 prop_bestCost s = 
    let (n,xs) = (chunks s, items s)
-       maxCost ys = foldr max 0.0 (map price ys)
-       partitionCost = floor . maxCost 
        bestCost = partitionCost (lPartition (chunks s) (items s))
-   in all (>= bestCost) (map partitionCost (splitters s))
+   in all (>= bestCost) $ map partitionCost (splitters s)
 
 -- | Ensure that the real number of ranges no more than required
 prop_numRanges = forAll (arbitrary :: Gen Split) $ \s ->
-   all (<= (chunks s)) (map length (splitters s))
+   all (<= chunks s) $ map length (splitters s)
 
--- | Ensure that the splitting dividers are ordered as working items
-prop_ordered s = 
-  let divs = map (foldr dividers []) (splitters s)
-      dividers r xs = if low r == high r then low r : xs
-                       else low r : (high r : xs)
-   in all (ordered (map item (items s))) divs
+-- | Ensure that the items after splitting the same as the items 
+-- before splitting
+prop_equal s = 
+  let inpIds = map item (items s)
+      outIds = concat . map (map item)
+  in all ((==) inpIds) (map outIds (splitters s))
 
 -- | Reverse working items preserves the optimal cost
 prop_reverse s =
   let (n,xs) = (chunks s, items s)
-      maxCost ys = foldr max 0.0 (map price ys)
-      partitionCost = floor . maxCost
-  in partitionCost (lPartition n xs) == partitionCost (lPartition n (reverse xs))
-
--- | Ensure that the ranges prices equal to the sum of weight corresponding
--- work items
-prop_rangeCost s =
-  and [eqCost rs (items s) | rs <- splitters s] 
+  in partitionCost (lPartition n xs) == 
+     partitionCost (lPartition n (reverse xs))
 
 -- | Testing helpers
-ordered :: [Int] -> [Int] -> Bool
-ordered [] [] = True
-ordered (x:xs) (y:ys) 
-   | x == y = ordered xs ys
-   | otherwise = ordered xs (y:ys)
-ordered _ _ = False
+--rangeCost :: [Item Int Double] -> Double
+rangeCost = sum . map weight
 
-eqCost :: [Range Int Double] -> [Item Int Double] -> Bool
-eqCost [] [] = True
-eqCost (Range p l h:xs) ys =
-        let (ks,zs) = span (\(Item i _) -> i /= h) ys
-            (ks',zs') = (ks ++ [head zs], tail zs)
-        in and [(item . head) ks' == l
-               ,(item . last) ks' == h
-               ,floor (sum (map weight ks')) == floor p 
-               ,eqCost xs zs'
-               ] 
+partitionCost = floor . maxCost where
+   maxCost = foldr (max . rangeCost) 0.0
 
 main :: IO ()
 main = defaultMain tests
@@ -111,9 +91,9 @@ main = defaultMain tests
 tests :: [Test]
 tests =
     [ testProperty "numRanges" prop_numRanges
-    , testProperty "ordered" prop_ordered
+    , testProperty "equal" prop_equal
     , testProperty "reverse" prop_reverse
     , testProperty "totalCost" prop_totalCost
     , testProperty "bestCost" prop_bestCost
-    , testProperty "rangeCost" prop_rangeCost
     ]
+

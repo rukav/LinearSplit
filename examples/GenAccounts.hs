@@ -31,6 +31,5 @@ main = do
 
 writeToFile name accs =
   do h <- openFile name WriteMode 
-     mapM_ (hPutStrLn h) $ 
-       map (\(A i w) -> show i ++ "  " ++ show w) accs
+     mapM_ (hPutStrLn h . (\(A i w) -> show i ++ "  " ++ show w)) accs
      hClose h 

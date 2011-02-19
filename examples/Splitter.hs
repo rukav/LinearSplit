@@ -23,6 +23,13 @@ type AccountId = Int
 type NumRecords = Int
 type Account = Item AccountId NumRecords
 
+-- | Range of accounts
+data Range = Range {
+   price :: NumRecords,     -- cost of the range
+   low :: AccountId,        -- first item of the range
+   high :: AccountId        -- last item of the range
+} deriving (Eq, Show, Ord)
+
 -- / Splitter configuration parameters
 data Splitter = Splitter {
   file_ :: FilePath,
@@ -45,6 +52,11 @@ splitter = cmdArgsMode $ Splitter
     summary "Splitter 0.1" &=
     help "Partition the list of accounts into number of ranges for the parallel execution" &=
     details []
+
+-- | Create ranges
+--ranges :: (Ord b, Num b) => [[Item a b]] -> [Range a b]
+ranges xss =  map mkRange xss where
+   mkRange xs = Range (sum $ map weight xs) (item $ head xs) (item $ last xs)
 
 -- / Partitions algorithms
 optimal = ltPartition
@@ -69,24 +81,24 @@ eval cnf = do
   rows <- hGetContents inh
   let items = map mkItem $ filter ((== 2).length) $ map words $ lines rows
   let numRanges = numranges_ cnf
-  
+ 
   when (optimal_ cnf) $ do
     let threshold = threshold_ cnf
-    let ranges = optimal numRanges items threshold
-    display "Approximation Best" ranges
+    let rs = ranges $ optimal numRanges items threshold
+    display "Approximation Best" rs
     
   when (greedy_ cnf) $ do   
-    let ranges = greedy numRanges items
-    display "Greedy" ranges
+    let rs = ranges $ greedy numRanges items
+    display "Greedy" rs
    
   when (trivial_ cnf) $ do
-    let ranges = trivial numRanges items
-    display "Trivial" ranges
-     
+    let rs = ranges $ trivial numRanges items
+    display "Trivial" rs
+   
   hClose inh 
 
 -- | Display the results of the Splitter execution 
-display :: String -> [Range AccountId NumRecords] -> IO ()
+display :: String -> [Range] -> IO ()
 display title ranges = do
    putStrLn $ "\n     " ++ title
    t1 <- getCPUTime
