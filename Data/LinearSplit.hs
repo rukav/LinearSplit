@@ -9,13 +9,13 @@
 --
 -- The LinearSplit module implements partitioning the sequence of items to the 
 -- subsequences in the order given. The next functions are exported:
---    a) gPartition  - split the sequence of items items using greedy heuristic. 
---    b) lPartition  - split the sequence of items to minimize the maximum cost over 
---                     all the subsequences using linear partition algorithm
---                     (see the 'The Algorithm Design Manual' by Steven S. Skiena..)  
---    c) ltPartition - the approximation of the linear partition algorithm.
---                     The large size of the work items space is decreased by
---                     combining the consecutive items based on the threshold parameter.
+-- * gPartition. Split the sequence of items items using greedy heuristic. 
+-- * lPartition. Split the sequence of items to minimize the maximum cost over 
+--   all the subsequences using linear partition algorithm
+--   (see the 'The Algorithm Design Manual' by Steven S. Skiena..)  
+-- * ltPartition. The approximation of the linear partition algorithm.
+--   The large size of the work items space is decreased by
+--   combining the consecutive items based on the threshold parameter.
 -- 
 
 module Data.LinearSplit (

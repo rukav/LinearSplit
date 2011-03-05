@@ -10,7 +10,11 @@
 -- Portability :  non-portable
 
 -- Balance the work items accross processors to minimize the total elapsed time.
--- For help use ./Splitter --help
+--
+-- For example, the next program invocation  will split the items in test1.txt on 
+-- 5 ranges using greedy heuristics and linear partition algorithm.
+-- $ Splitter -f test1.txt -n -o -g -t500 -s5
+
 
 module Main where
 import System.IO
